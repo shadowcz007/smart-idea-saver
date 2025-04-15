@@ -14,6 +14,7 @@ import { Settings } from 'lucide-react';
 import mcpService, { MCPStatus, MCPConfig } from '@/services/MCPService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { inspirationPrompt } from '@/services/Prompt';
 
 const SettingsDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -21,7 +22,7 @@ const SettingsDialog: React.FC = () => {
     ...mcpService.getConfig(),
     llmApiUrl: mcpService.getConfig().llmApiUrl || "https://api.siliconflow.cn/v1/chat/completions",
     llmModel: mcpService.getConfig().llmModel || "Qwen/Qwen2.5-7B-Instruct",
-    inspirationPrompt: mcpService.getConfig().inspirationPrompt || "根据以下笔记和已有知识，请提供创新的思维框架或见解，帮助理解这些概念之间的联系：\n\n{note}\n\n请分析这些概念如何能够帮助构建创新的思维框架来理解复杂系统或解决当前面临的问题。"
+    inspirationPrompt: mcpService.getConfig().inspirationPrompt || inspirationPrompt
   });
   const [status, setStatus] = useState<MCPStatus>({ connected: false });
   const [loading, setLoading] = useState(false);

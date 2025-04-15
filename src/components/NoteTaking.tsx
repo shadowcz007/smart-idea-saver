@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { LightbulbIcon, SaveIcon } from 'lucide-react';
@@ -15,10 +15,24 @@ const NoteTaking: React.FC = () => {
   const [result, setResult] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
   const [streamingData, setStreamingData] = useState<string>('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNoteText(e.target.value);
+    adjustTextareaHeight();
   };
+
+  const adjustTextareaHeight = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.max(300, textarea.scrollHeight)}px`;
+    }
+  };
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [noteText]);
 
   const processNote = async () => {
     if (!noteText.trim()) {
@@ -116,8 +130,9 @@ const NoteTaking: React.FC = () => {
           {/* 左侧：文本输入区 */}
           <div className="flex flex-col space-y-4">
             <Textarea
+              ref={textareaRef}
               placeholder="在此输入你的笔记..."
-              className="flex-1 min-h-[400px] p-4"
+              className="flex-1 min-h-[300px] p-4 overflow-hidden"
               value={noteText}
               onChange={handleNoteChange}
               disabled={processing}

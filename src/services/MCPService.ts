@@ -1,6 +1,7 @@
 import { checkMCPStatus } from './CheckMCPStatus'
 import { processKnowledgeTools } from './KnowledgeTools'
 import { getKnowledge } from './GetKnowledge'
+import { inspirationPrompt } from './Prompt'
 
 export interface MCPStatus {
   connected: boolean
@@ -112,11 +113,11 @@ class MCPService {
     if (!this.config.url || !noteText.trim()) {
       throw new Error('MCP URL not configured or note is empty')
     }
-
+     
     try {
       // 组合文本作为提示
       const combinedText = [existingKnowledge, noteText].join('\n\n')
-      const prompt = this.config.inspirationPrompt.replace(
+      const prompt = (this.config.inspirationPrompt||inspirationPrompt).replace(
         /\${note}|\{note\}/g,
         combinedText
       )
