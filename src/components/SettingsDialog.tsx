@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
   DialogFooter,
   DialogTrigger
@@ -13,17 +12,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Settings } from 'lucide-react';
 import mcpService, { MCPStatus, MCPConfig } from '@/services/MCPService';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SettingsDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [config, setConfig] = useState<MCPConfig>(mcpService.getConfig());
+  const [config, setConfig] = useState<MCPConfig>({
+    ...mcpService.getConfig(),
+    llmApiUrl: mcpService.getConfig().llmApiUrl || "https://api.siliconflow.cn/v1/chat/completions",
+    llmModel: mcpService.getConfig().llmModel || "Qwen/Qwen2.5-7B-Instruct"
+  });
   const [status, setStatus] = useState<MCPStatus>({ connected: false });
   const [loading, setLoading] = useState(false);
 
   const checkStatus = async () => {
     setLoading(true);
+    console.log('checkStatus');
     try {
       const status = await mcpService.checkStatus();
+
       setStatus(status);
     } catch (error) {
       console.error('Failed to check MCP status:', error);
@@ -38,9 +44,10 @@ const SettingsDialog: React.FC = () => {
     }
   }, [open]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     mcpService.saveConfig(config);
-    checkStatus();
+    await checkStatus();
+    setOpen(false);
   };
 
   return (
@@ -53,48 +60,110 @@ const SettingsDialog: React.FC = () => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>MCP 设置</DialogTitle>
+          <DialogTitle>设置</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="mcp-url" className="text-right">
-              MCP URL
-            </Label>
-            <Input
-              id="mcp-url"
-              value={config.url}
-              onChange={(e) => setConfig({ ...config, url: e.target.value })}
-              placeholder="http://localhost:8000"
-              className="col-span-3"
-            />
-          </div>
-          
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-right">状态</Label>
-            <div className="col-span-3 flex items-center">
-              <div className={`h-2 w-2 rounded-full mr-2 ${status.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-              <span>{status.connected ? '已连接' : '未连接'}</span>
+
+        <Tabs defaultValue="mcp" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="mcp">MCP 设置</TabsTrigger>
+            <TabsTrigger value="llm">LLM 设置</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="mcp" className="mt-2">
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="mcp-url" className="text-right">
+                  MCP URL
+                </Label>
+                <Input
+                  id="mcp-url"
+                  value={config.url}
+                  onChange={(e) => setConfig({ ...config, url: e.target.value })}
+                  placeholder="http://localhost:8000"
+                  className="col-span-3"
+                />
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">状态</Label>
+                <div className="col-span-3 flex items-center">
+                  <div className={`h-2 w-2 rounded-full mr-2 ${status.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <span>{status.connected ? '已连接' : '未连接'}</span>
+                </div>
+              </div>
+
+              {status.connected && (
+                <>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">服务器信息</Label>
+                    <div className="col-span-3">
+                      <span className="text-sm text-muted-foreground">{status.serverInfo || '-'}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">工具</Label>
+                    <div className="col-span-3">
+                      <span className="text-sm text-muted-foreground">{status.toolCount || 0} 个工具</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">系统提示</Label>
+                    <div className="col-span-3">
+                      <span className="text-sm text-muted-foreground">{status.systemPromptCount || 0} 个系统提示</span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
-          </div>
-          
-          {status.connected && (
-            <>
+          </TabsContent>
+
+          <TabsContent value="llm" className="mt-2">
+            <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">服务器信息</Label>
-                <div className="col-span-3">
-                  <span className="text-sm text-muted-foreground">{status.serverInfo || '-'}</span>
-                </div>
+                <Label htmlFor="llm-api-url" className="text-right">
+                  API URL
+                </Label>
+                <Input
+                  id="llm-api-url"
+                  value={config.llmApiUrl}
+                  onChange={(e) => setConfig({ ...config, llmApiUrl: e.target.value })}
+                  placeholder="https://api.siliconflow.cn/v1/chat/completions"
+                  className="col-span-3"
+                />
               </div>
-              
+
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">工具数量</Label>
-                <div className="col-span-3">
-                  <span className="text-sm text-muted-foreground">{status.toolCount || 0} 个工具</span>
-                </div>
+                <Label htmlFor="llm-api-key" className="text-right">
+                  API Key
+                </Label>
+                <Input
+                  id="llm-api-key"
+                  type="password"
+                  value={config.llmApiKey}
+                  onChange={(e) => setConfig({ ...config, llmApiKey: e.target.value })}
+                  placeholder="sk-..."
+                  className="col-span-3"
+                />
               </div>
-            </>
-          )}
-        </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="llm-model" className="text-right">
+                  模型
+                </Label>
+                <Input
+                  id="llm-model"
+                  value={config.llmModel}
+                  onChange={(e) => setConfig({ ...config, llmModel: e.target.value })}
+                  placeholder="Qwen/Qwen2.5-7B-Instruct"
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+
         <DialogFooter>
           <Button onClick={handleSave} disabled={loading}>
             {loading ? '检查中...' : '保存设置'}
