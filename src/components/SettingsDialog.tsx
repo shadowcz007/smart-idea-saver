@@ -13,13 +13,15 @@ import { Label } from '@/components/ui/label';
 import { Settings } from 'lucide-react';
 import mcpService, { MCPStatus, MCPConfig } from '@/services/MCPService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 
 const SettingsDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [config, setConfig] = useState<MCPConfig>({
     ...mcpService.getConfig(),
     llmApiUrl: mcpService.getConfig().llmApiUrl || "https://api.siliconflow.cn/v1/chat/completions",
-    llmModel: mcpService.getConfig().llmModel || "Qwen/Qwen2.5-7B-Instruct"
+    llmModel: mcpService.getConfig().llmModel || "Qwen/Qwen2.5-7B-Instruct",
+    inspirationPrompt: mcpService.getConfig().inspirationPrompt || "根据以下笔记和已有知识，请提供创新的思维框架或见解，帮助理解这些概念之间的联系：\n\n{note}\n\n请分析这些概念如何能够帮助构建创新的思维框架来理解复杂系统或解决当前面临的问题。"
   });
   const [status, setStatus] = useState<MCPStatus>({ connected: false });
   const [loading, setLoading] = useState(false);
@@ -64,9 +66,10 @@ const SettingsDialog: React.FC = () => {
         </DialogHeader>
 
         <Tabs defaultValue="mcp" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="mcp">MCP 设置</TabsTrigger>
             <TabsTrigger value="llm">LLM 设置</TabsTrigger>
+            <TabsTrigger value="inspiration">灵感设置</TabsTrigger>
           </TabsList>
 
           <TabsContent value="mcp" className="mt-2">
@@ -159,6 +162,28 @@ const SettingsDialog: React.FC = () => {
                   placeholder="Qwen/Qwen2.5-7B-Instruct"
                   className="col-span-3"
                 />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="inspiration" className="mt-2">
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="inspiration-prompt" className="text-right">
+                  灵感提示词
+                </Label>
+                <div className="col-span-3">
+                  <Textarea
+                    id="inspiration-prompt"
+                    value={config.inspirationPrompt}
+                    onChange={(e) => setConfig({ ...config, inspirationPrompt: e.target.value })}
+                    placeholder="请输入灵感生成提示词，使用{note}作为笔记内容占位符"
+                    className="min-h-[150px]"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    使用 {'{note}'} 作为笔记内容的占位符
+                  </p>
+                </div>
               </div>
             </div>
           </TabsContent>

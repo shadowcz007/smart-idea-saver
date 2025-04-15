@@ -14,6 +14,7 @@ export interface MCPConfig {
   llmApiUrl: string
   llmApiKey: string
   llmModel: string
+  inspirationPrompt: string
 }
 
 class MCPService {
@@ -23,7 +24,10 @@ class MCPService {
       localStorage.getItem('llmApiUrl') ||
       'https://api.siliconflow.cn/v1/chat/completions',
     llmApiKey: localStorage.getItem('llmApiKey') || '',
-    llmModel: localStorage.getItem('llmModel') || 'Qwen/Qwen2.5-7B-Instruct'
+    llmModel: localStorage.getItem('llmModel') || 'Qwen/Qwen2.5-7B-Instruct',
+    inspirationPrompt:
+      localStorage.getItem('inspirationPrompt') ||
+      '根据以下笔记和已有知识，请提供创新的思维框架或见解，帮助理解这些概念之间的联系：\n\n{note}\n\n请分析这些概念如何能够帮助构建创新的思维框架来理解复杂系统或解决当前面临的问题。'
   }
 
   constructor () {
@@ -112,7 +116,10 @@ class MCPService {
     try {
       // 组合文本作为提示
       const combinedText = [existingKnowledge, noteText].join('\n\n')
-      const prompt = `根据以下笔记和已有知识，请提供创新的思维框架或见解，帮助理解这些概念之间的联系：\n\n${combinedText}\n\n请分析这些概念如何能够帮助构建创新的思维框架来理解复杂系统或解决当前面临的问题。`
+      const prompt = this.config.inspirationPrompt.replace(
+        /\${note}|\{note\}/g,
+        combinedText
+      )
 
       // 发送请求到LLM API
       const response = await fetch(this.config.llmApiUrl, {
@@ -131,7 +138,7 @@ class MCPService {
           ],
           stream: false,
           max_tokens: 2024,
-          temperature: 0.7 
+          temperature: 0.7
         })
       })
 
