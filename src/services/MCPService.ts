@@ -1,5 +1,6 @@
 import { checkMCPStatus } from './CheckMCPStatus'
 import { processKnowledgeTools } from './KnowledgeTools'
+import { getKnowledge } from './GetKnowledge'
 
 export interface MCPStatus {
   connected: boolean
@@ -74,14 +75,16 @@ class MCPService {
         callback
       )
       // Simulated response
-      return result?.length>0?JSON.stringify(result,null,2):'Failed to process note'
+      return result?.length > 0
+        ? JSON.stringify(result, null, 2)
+        : 'Failed to process note'
     } catch (error) {
       console.error('Failed to process note:', error)
       throw new Error('Failed to process note through MCP')
     }
   }
 
-  async getKnowledge (): Promise<string[]> {
+  async getKnowledge () {
     if (!this.config.url) {
       throw new Error('MCP URL not configured')
     }
@@ -89,15 +92,9 @@ class MCPService {
     try {
       // Simulate fetching knowledge from MCP
       // In a real implementation, you would make a fetch request to the MCP server
-      await new Promise(resolve => setTimeout(resolve, 1500))
-
-      // Simulated response
-      return [
-        'The key to productivity is focused deep work.',
-        'Spaced repetition improves long-term memory retention.',
-        'Connecting ideas across domains leads to novel insights.',
-        'Regular reflection enhances learning and creativity.'
-      ]
+      await new Promise(resolve => setTimeout(resolve, 500))
+      let result: any = await getKnowledge(this.config.url)
+      return JSON.stringify(result || {}, null, 2)
     } catch (error) {
       console.error('Failed to get knowledge from MCP:', error)
       throw new Error('Failed to retrieve knowledge from MCP')
@@ -106,30 +103,47 @@ class MCPService {
 
   async generateInspiration (
     noteText: string,
-    existingKnowledge: string[]
+    existingKnowledge: string
   ): Promise<string> {
     if (!this.config.url || !noteText.trim()) {
       throw new Error('MCP URL not configured or note is empty')
     }
 
     try {
-      // Simulate generating inspiration through MCP and LLM
-      // In a real implementation, you would make a fetch request to the MCP server
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      // 组合文本作为提示
+      const combinedText = [existingKnowledge, noteText].join('\n\n')
+      const prompt = `根据以下笔记和已有知识，请提供创新的思维框架或见解，帮助理解这些概念之间的联系：\n\n${combinedText}\n\n请分析这些概念如何能够帮助构建创新的思维框架来理解复杂系统或解决当前面临的问题。`
 
-      // Simulated response - combine existing knowledge with the note to create "inspiration"
-      const combinedText = [...existingKnowledge, noteText].join(' ')
-      const inspiration = `Based on your notes and existing knowledge, consider exploring the connection between ${combinedText
-        .split(' ')
-        .slice(0, 3)
-        .join(' ')} and ${combinedText
-        .split(' ')
-        .slice(-3)
-        .join(
-          ' '
-        )} to develop a novel framework for understanding complex systems.`
+      // 发送请求到LLM API
+      const response = await fetch(this.config.llmApiUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.config.llmApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: this.config.llmModel,
+          messages: [
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          stream: false,
+          max_tokens: 2024,
+          temperature: 0.7 
+        })
+      })
 
-      return inspiration
+      if (!response.ok) {
+        throw new Error(
+          `API请求失败: ${response.status} ${response.statusText}`
+        )
+      }
+
+      const data = await response.json()
+      // console.log('生成灵感', data)
+      return data.choices[0].message.content
     } catch (error) {
       console.error('Failed to generate inspiration:', error)
       throw new Error('Failed to generate inspiration through MCP')

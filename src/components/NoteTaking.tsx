@@ -49,7 +49,7 @@ const NoteTaking: React.FC = () => {
           setStage(ProcessStage.GeneratingParameters);
           // 更新流式数据
           if (data.data) {
-            setStreamingData(prev => prev ? `${prev+data.data}` : data.data);
+            setStreamingData(prev => prev ? `${prev + data.data}` : data.data);
           }
         } else if (data.status === 'save') {
           console.log('保存知识工具', data.data)
@@ -72,10 +72,10 @@ const NoteTaking: React.FC = () => {
   };
 
   const generateInspiration = async () => {
-    if (!noteText.trim()) {
-      toast.error('请输入笔记内容');
-      return;
-    }
+    // if (!noteText.trim()) {
+    //   toast.error('请输入笔记内容');
+    //   return;
+    // }
 
     setIsInspiration(true);
     setProcessing(true);
@@ -87,10 +87,10 @@ const NoteTaking: React.FC = () => {
     try {
       // 从 MCP 获取知识
       const knowledge = await mcpService.getKnowledge();
-
+      console.log('获取知识', knowledge)
       // 生成灵感
       setStage(ProcessStage.GeneratingInspiration);
-      const inspiration = await mcpService.generateInspiration(noteText, knowledge);
+      const inspiration = await mcpService.generateInspiration(noteText||'', knowledge);
 
       // 完成
       setStage(ProcessStage.Done);

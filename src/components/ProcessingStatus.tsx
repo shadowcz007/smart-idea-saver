@@ -1,6 +1,8 @@
 import React from 'react';
 import { CheckIcon, Loader2Icon } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { renderMarkdown } from '@/services/Markdown';
+
 
 export enum ProcessStage {
   Idle = 'idle',
@@ -130,7 +132,7 @@ const ProcessingStatus: React.FC<ProcessingStatusProps> = ({
                 {isInspiration ? '灵感生成成功' : '笔记保存成功'}
               </p>
             </div>
-            <p className="text-sm">{result}</p>
+            <div dangerouslySetInnerHTML={{ __html: renderMarkdown(result) }} />
           </div>
         )}
       </CardContent>
