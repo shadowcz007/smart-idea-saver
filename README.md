@@ -116,6 +116,9 @@ async generateInspiration(
 
 ## 使用方法
 
+### 配套MCP
+[window:mcp_server_memory](https://github.com/shadowcz007/aio_mcp_exe/releases/download/0.1/mcp_server_memory.exe)
+
 ### 安装依赖
 
 ```bash
