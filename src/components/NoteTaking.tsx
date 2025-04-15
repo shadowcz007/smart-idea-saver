@@ -33,6 +33,8 @@ const NoteTaking: React.FC = () => {
 
     try {
 
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // 调用 MCP 服务处理笔记
       const response = await mcpService.processNote(noteText, (data: any) => {
         if (data.status === 'function_call_start') {
@@ -40,13 +42,14 @@ const NoteTaking: React.FC = () => {
           // 进入参数生成阶段
           setStage(ProcessStage.GeneratingParameters);
         } else if (data.status === 'function_call') {
-          console.log('处理知识工具中')
+          console.log('处理知识工具中', data.data)
+          // 继续保持在参数生成阶段
+          setStage(ProcessStage.GeneratingParameters);
         } else if (data.status === 'save') {
-          console.log('保存知识工具')
+          console.log('保存知识工具', data.data)
           // 进入保存阶段
           setStage(ProcessStage.Saving);
         }
-
       });
 
       // 完成

@@ -65,7 +65,7 @@ class MCPService {
     }
 
     try {
-      processKnowledgeTools(
+      await processKnowledgeTools(
         noteText,
         this.config.url,
         this.config.llmModel,
