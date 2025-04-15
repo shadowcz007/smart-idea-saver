@@ -1,11 +1,11 @@
-import { prepareTools } from 'mcp-uiux/dist/MCPClient.js'
-//@ts-ignore
-window._prepareTools=prepareTools
+import { checkMCPStatus } from './CheckMCPStatus'
+import { processKnowledgeTools } from './KnowledgeTools'
+
 export interface MCPStatus {
   connected: boolean
   serverInfo?: string
   toolCount?: number
-  systemPromptCount?:number
+  systemPromptCount?: number
 }
 
 export interface MCPConfig {
@@ -18,7 +18,9 @@ export interface MCPConfig {
 class MCPService {
   private config: MCPConfig = {
     url: localStorage.getItem('mcpUrl') || 'http://localhost:8080',
-    llmApiUrl: localStorage.getItem('llmApiUrl') || 'https://api.siliconflow.cn/v1/chat/completions',
+    llmApiUrl:
+      localStorage.getItem('llmApiUrl') ||
+      'https://api.siliconflow.cn/v1/chat/completions',
     llmApiKey: localStorage.getItem('llmApiKey') || '',
     llmModel: localStorage.getItem('llmModel') || 'Qwen/Qwen2.5-7B-Instruct'
   }
@@ -51,38 +53,26 @@ class MCPService {
     if (!this.config.url) {
       return { connected: false }
     }
-    console.log(this.config);
-    try {
-      let { mcpClient, toolsFunctionCall, systemPrompts }: any =
-        await prepareTools(this.config.url)
-
-      if (mcpClient) {
-        mcpClient.disconnect()
-        return {
-          connected: true,
-          serverInfo: `${mcpClient.serverInfo.name} v${mcpClient.serverInfo.version}`,
-          toolCount: toolsFunctionCall.length,
-          systemPromptCount: systemPrompts.length
-        }
-      } else {
-        return { connected: false }
-      }
-    } catch (error) {
-      console.error('Failed to check MCP status:', error)
-      return { connected: false }
-    }
+    return await checkMCPStatus(this.config.url)
   }
 
-  async processNote (noteText: string): Promise<string> {
+  async processNote (
+    noteText: string,
+    callback: (data: any) => void
+  ): Promise<string> {
     if (!this.config.url || !noteText.trim()) {
       throw new Error('MCP URL not configured or note is empty')
     }
 
     try {
-      // Simulate processing through MCP
-      // In a real implementation, you would make a fetch request to the MCP server
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
+      processKnowledgeTools(
+        noteText,
+        this.config.url,
+        this.config.llmModel,
+        this.config.llmApiKey,
+        this.config.llmApiUrl,
+        callback
+      )
       // Simulated response
       return 'Note processed and saved successfully.'
     } catch (error) {
