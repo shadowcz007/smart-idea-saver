@@ -29,7 +29,6 @@ const SettingsDialog: React.FC = () => {
 
   const checkStatus = async () => {
     setLoading(true);
-    console.log('checkStatus');
     try {
       const status = await mcpService.checkStatus();
 
