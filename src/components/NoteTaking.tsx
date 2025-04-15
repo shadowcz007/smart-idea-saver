@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,7 +5,7 @@ import { LightbulbIcon, SaveIcon } from 'lucide-react';
 import ProcessingStatus, { ProcessStage } from './ProcessingStatus';
 import SettingsDialog from './SettingsDialog';
 import mcpService from '@/services/MCPService';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 const NoteTaking: React.FC = () => {
   const [noteText, setNoteText] = useState('');
