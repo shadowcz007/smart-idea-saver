@@ -14,6 +14,7 @@ const NoteTaking: React.FC = () => {
   const [isInspiration, setIsInspiration] = useState(false);
   const [result, setResult] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
+  const [streamingData, setStreamingData] = useState<string>('');
 
   const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNoteText(e.target.value);
@@ -30,6 +31,7 @@ const NoteTaking: React.FC = () => {
     setStage(ProcessStage.Understanding);
     setResult(undefined);
     setError(undefined);
+    setStreamingData('');
 
     try {
 
@@ -45,6 +47,10 @@ const NoteTaking: React.FC = () => {
           console.log('处理知识工具中', data.data)
           // 继续保持在参数生成阶段
           setStage(ProcessStage.GeneratingParameters);
+          // 更新流式数据
+          if (data.data) {
+            setStreamingData(prev => prev ? `${prev+data.data}` : data.data);
+          }
         } else if (data.status === 'save') {
           console.log('保存知识工具', data.data)
           // 进入保存阶段
@@ -76,6 +82,7 @@ const NoteTaking: React.FC = () => {
     setStage(ProcessStage.FetchingKnowledge);
     setResult(undefined);
     setError(undefined);
+    setStreamingData('');
 
     try {
       // 从 MCP 获取知识
@@ -145,6 +152,7 @@ const NoteTaking: React.FC = () => {
               isInspiration={isInspiration}
               result={result}
               error={error}
+              streamingData={streamingData}
             />
           </div>
         </div>

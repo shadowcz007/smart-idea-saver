@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CheckIcon, Loader2Icon } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,13 +19,15 @@ interface ProcessingStatusProps {
   isInspiration?: boolean;
   result?: string;
   error?: string;
+  streamingData?: string;
 }
 
 const ProcessingStatus: React.FC<ProcessingStatusProps> = ({ 
   stage, 
   isInspiration = false, 
   result,
-  error
+  error,
+  streamingData
 }) => {
   const getStageText = (stage: ProcessStage, isInspiration: boolean): string => {
     switch (stage) {
@@ -78,8 +79,8 @@ const ProcessingStatus: React.FC<ProcessingStatusProps> = ({
         
         <div className="space-y-4">
           {stages.map((s, index) => {
-            const isActive = currentStageIndex === index;
-            const isCompleted = currentStageIndex > index;
+            const isActive = stage !== ProcessStage.Done && currentStageIndex === index;
+            const isCompleted = currentStageIndex > index || stage === ProcessStage.Done;
             
             return (
               <div key={s} className="flex items-center">
@@ -107,6 +108,14 @@ const ProcessingStatus: React.FC<ProcessingStatusProps> = ({
           })}
         </div>
 
+        {/* 显示流式数据 */}
+        {stage === ProcessStage.GeneratingParameters && streamingData && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md overflow-auto max-h-[200px]">
+            <h4 className="text-sm font-medium mb-2 text-blue-700">处理进度实时输出：</h4>
+            <pre className="text-xs whitespace-pre-wrap text-blue-800">{streamingData}</pre>
+          </div>
+        )}
+
         {stage === ProcessStage.Error && error && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700">
             <p className="text-sm">{error}</p>
@@ -115,6 +124,12 @@ const ProcessingStatus: React.FC<ProcessingStatusProps> = ({
 
         {stage === ProcessStage.Done && result && (
           <div className="mt-4 p-3 bg-accent border border-accent-foreground/20 rounded-md">
+            <div className="flex items-center mb-2">
+              <CheckIcon className="h-5 w-5 text-green-500 mr-2" />
+              <p className="text-sm font-medium text-white-700">
+                {isInspiration ? '灵感生成成功' : '笔记保存成功'}
+              </p>
+            </div>
             <p className="text-sm">{result}</p>
           </div>
         )}

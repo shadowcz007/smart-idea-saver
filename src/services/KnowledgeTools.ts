@@ -39,15 +39,20 @@ export const processKnowledgeTools = async (
         if (callback)
           callback({
             status: 'function_call',
-            data: chunk
+            data: chunk?.choices?.[0]?.delta?.tool_calls?JSON.stringify(chunk?.choices?.[0]?.delta?.tool_calls):""
           })
       }
     )
 
+    let saveResult=[];
     for (const item of toolsResult) {
       let tool = tools.find((tool: any) => tool.name == item.name)
       let result = await tool.execute(item.arguments)
       console.log('工具执行结果', item.name, result)
+      saveResult.push({
+        name: item.name,
+        result
+      })
       if (callback)
         callback({
           status: 'save',
@@ -59,8 +64,8 @@ export const processKnowledgeTools = async (
     }
 
     mcpClient.disconnect()
-    return true
+    return saveResult
   } else {
-    return false
+    return 
   }
 }

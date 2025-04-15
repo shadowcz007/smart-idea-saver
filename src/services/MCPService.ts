@@ -65,7 +65,7 @@ class MCPService {
     }
 
     try {
-      await processKnowledgeTools(
+      let result = await processKnowledgeTools(
         noteText,
         this.config.url,
         this.config.llmModel,
@@ -74,7 +74,7 @@ class MCPService {
         callback
       )
       // Simulated response
-      return 'Note processed and saved successfully.'
+      return result?.length>0?JSON.stringify(result,null,2):'Failed to process note'
     } catch (error) {
       console.error('Failed to process note:', error)
       throw new Error('Failed to process note through MCP')
